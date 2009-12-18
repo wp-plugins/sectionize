@@ -3,7 +3,7 @@
 Plugin Name: Sectionize
 Plugin URI: http://wordpress.org/extend/plugins/sectionize/
 Description: Parses HTML content for sections demarcated by heading elements: wraps HTML5 <code>section<code> elements around them, and generates table of contents with links to each section. <em>Plugin developed at <a href="http://www.shepherd-interactive.com/" title="Shepherd Interactive specializes in web design and development in Portland, Oregon">Shepherd Interactive</a>.</em>
-Version: 1.0
+Version: 1.1
 Author: Weston Ruter
 Author URI: http://weston.ruter.net/
 Copyright: 2009, Weston Ruter, Shepherd Interactive <http://shepherd-interactive.com/>. GPL license.
@@ -24,13 +24,20 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-add_option('sectionize_id_prefix', 'section-'); //§
-add_option('sectionize_start_section', '<section id="%id">');
-add_option('sectionize_end_section',  '</section>');
-add_option('sectionize_include_toc_threshold', 2); //-1 means never include TOC
-add_option('sectionize_before_toc', '<nav class="toc">');
-add_option('sectionize_after_toc',  '</nav>');
-add_option('sectionize_disabled',  false);
+/**
+ * Plugin activation
+ */
+function sectionize_activate(){
+	add_option('sectionize_id_prefix', 'section-'); //§
+	add_option('sectionize_start_section', '<section id="%id">');
+	add_option('sectionize_end_section',  '</section>');
+	add_option('sectionize_include_toc_threshold', 2); //-1 means never include TOC
+	add_option('sectionize_before_toc', '<nav class="toc">');
+	add_option('sectionize_after_toc',  '</nav>');
+	add_option('sectionize_disabled',  false);
+}
+register_activation_hook(__FILE__, "sectionize_activate");
+
 
 /**
  * Takes HTML content which contains flat heading elements and automatically
@@ -174,7 +181,11 @@ function sectionize($original_content,
 			$toc .= apply_filters('sectionize_start_toc_item', '<li>', $level);
 			
 			// Link to the section
-			$toc .= apply_filters('sectionize_toc_link', "<a href='#" . esc_attr($id) . "'>" . strip_tags($headingMatches[$i][2][0]) . "</a>", $level);
+			$toc .= apply_filters('sectionize_toc_link', (
+				"<a href='#" . esc_attr($id) . "'>" .
+				apply_filters('sectionize_toc_text', $headingMatches[$i][2][0], $level) .
+				"</a>")
+			, $level);
 		}
 		
 		//Start new section
@@ -212,3 +223,12 @@ function _sectionize_get_postmeta_or_option($name){
 	}
 	return get_option($name);
 }
+
+/**
+ * Default sectionized TOC item link text filter which does strip_tags
+ * and trims colon off of end.
+ */
+function sectionize_toc_text_default_filter($text){
+	return trim(rtrim(strip_tags($text), ':'));
+}
+add_filter('sectionize_toc_text', 'sectionize_toc_text_default_filter');

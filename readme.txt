@@ -1,7 +1,7 @@
 === Sectionize ===
 Contributors: westonruter
 Tags: HTML5, sections, toc, table of contents, seo
-Tested up to: 2.8.5
+Tested up to: 2.9
 Requires at least: 2.8
 Stable tag: trunk
 
@@ -145,3 +145,8 @@ To help serve HTML5 content, see the <a href="http://wordpress.org/extend/plugin
 
 = 2009-11-03: 1.0 =
 * Initial release
+
+= 2009-12-17: 1.1 =
+* Moved `add_option('sectionize_...)` calls to activation hook.
+* Adding `sectionize_toc_text` filter so that the link text in the TOC can be customized,
+  along with a default filter which strips off tags and a trailing ':'
